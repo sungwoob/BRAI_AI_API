@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from argparse import ArgumentParser
 from contextlib import AbstractContextManager
 from typing import Iterable, List, Sequence
 
@@ -22,6 +23,14 @@ class PhenotypeApiClient(AbstractContextManager["PhenotypeApiClient"]):
         data: Sequence[dict] = response.json()
         return list(data)
 
+    def list_model_phenotypes(self, model_id: str) -> List[str]:
+        """Return phenotypes that the specified model can predict."""
+
+        response = self._client.get(f"/api/models/{model_id}/phenotypes")
+        response.raise_for_status()
+        data: Sequence[str] = response.json()
+        return list(data)
+
     def close(self) -> None:
         """Close the underlying HTTP client."""
 
@@ -40,10 +49,28 @@ def format_models_table(models: Iterable[dict]) -> str:
         lines.append(f"  Description: {model['description']}")
         supported_inputs = ", ".join(model.get("supported_inputs", []))
         lines.append(f"  Supported inputs: {supported_inputs or 'n/a'}")
+        phenotypes = ", ".join(model.get("predictable_phenotypes", []))
+        lines.append(f"  Predictable phenotypes: {phenotypes or 'n/a'}")
     return "\n".join(lines)
 
 
 if __name__ == "__main__":
+    parser = ArgumentParser(description="Interact with the BRAI phenotype prediction API")
+    parser.add_argument(
+        "--model-id",
+        help="When provided, fetch and display the phenotypes predicted by the given model",
+    )
+    args = parser.parse_args()
+
     with PhenotypeApiClient() as client:
-        models = client.list_models()
-    print(format_models_table(models))
+        if args.model_id:
+            phenotypes = client.list_model_phenotypes(args.model_id)
+            if phenotypes:
+                print(f"Phenotypes predicted by {args.model_id}:")
+                for phenotype in phenotypes:
+                    print(f"- {phenotype}")
+            else:
+                print(f"No phenotypes registered for model {args.model_id}.")
+        else:
+            models = client.list_models()
+            print(format_models_table(models))

@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import List
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 from app.data.mock_models import MockModel
-from app.services.model_catalog import list_available_models
+from app.services.model_catalog import list_available_models, list_model_phenotypes
 
 app = FastAPI(
     title="BRAI Phenotype Prediction API",
@@ -26,3 +26,13 @@ async def get_available_models() -> List[MockModel]:
     """Retrieve the list of available phenotype prediction models."""
 
     return list_available_models()
+
+
+@app.get("/api/models/{model_id}/phenotypes", response_model=List[str])
+async def get_model_phenotypes(model_id: str) -> List[str]:
+    """Return the phenotypes that the requested model can predict."""
+
+    try:
+        return list_model_phenotypes(model_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Model not found") from exc
