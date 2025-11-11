@@ -46,7 +46,8 @@ def format_models_table(models: Iterable[dict]) -> str:
     lines = ["Available Phenotype Models:"]
     for model in models:
         lines.append(f"- {model['display_name']} (id={model['id']}, version={model['version']})")
-        lines.append(f"  Description: {model['description']}")
+        description = model.get("description", "n/a")
+        lines.append(f"  Description: {description}")
         supported_inputs = ", ".join(model.get("supported_inputs", []))
         lines.append(f"  Supported inputs: {supported_inputs or 'n/a'}")
         phenotypes = ", ".join(model.get("predictable_phenotypes", []))

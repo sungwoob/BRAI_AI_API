@@ -6,7 +6,7 @@ from typing import List
 
 from fastapi import FastAPI, HTTPException
 
-from app.data.mock_models import MockModel
+from app.data.ai_models import AIModel
 from app.services.model_catalog import list_available_models, list_model_phenotypes
 
 app = FastAPI(
@@ -21,8 +21,8 @@ app = FastAPI(
 )
 
 
-@app.get("/api/models", response_model=List[MockModel])
-async def get_available_models() -> List[MockModel]:
+@app.get("/api/models", response_model=List[AIModel])
+async def get_available_models() -> List[AIModel]:
     """Retrieve the list of available phenotype prediction models."""
 
     return list_available_models()

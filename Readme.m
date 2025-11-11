@@ -36,3 +36,28 @@ python client/models_client.py --model-id phenotype_classifier_v1
 
 The catalogue is currently populated with mock data until the model registry
 service is connected.
+
+### Managing mock AI models in code
+
+For test scenarios you can extend or shrink the mocked catalogue using the
+helpers in `app.services.model_catalog`:
+
+```python
+from app.services.model_catalog import register_model, unregister_model
+
+register_model(
+    required={
+        "id": "custom_model",
+        "display_name": "Custom Model",
+        "version": "0.1.0",
+        "supported_inputs": ["example_input"],
+        "predictable_phenotypes": ["example_phenotype"],
+    },
+    optional={"description": "Demonstrates how to register a model."},
+)
+
+unregister_model("custom_model")
+```
+
+Required fields live under the `required` mapping, while metadata like the
+description can be supplied via `optional`.
