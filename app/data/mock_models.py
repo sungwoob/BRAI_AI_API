@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from typing import List, TypedDict
+from typing import List
+
+from typing_extensions import TypedDict
 
 
 class MockModel(TypedDict):
