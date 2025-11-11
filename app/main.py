@@ -5,12 +5,13 @@ from __future__ import annotations
 from typing import List
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.data.ai_models import AIModel, OptionalAIModelFields, RequiredAIModelFields
 from app.services.model_catalog import (
     list_available_models,
     list_model_phenotypes,
+    phenotype_prediction,
     register_model,
     unregister_model,
 )
@@ -68,6 +69,20 @@ class CreateAIModelPayload(BaseModel):
         return required, optional or None
 
 
+class PhenotypePredictionPayload(BaseModel):
+    """Request body for phenotype prediction using genotype data."""
+
+    genotype_data: List[str] = Field(..., description="Genotype values extracted from BP1150 column")
+
+
+class PhenotypePredictionResponse(BaseModel):
+    """Response body containing the mocked prediction score."""
+
+    model_id: str
+    genotype_count: int
+    prediction_score: float = Field(..., ge=0.0, le=1.0)
+
+
 @app.post("/api/models", response_model=AIModel, status_code=201)
 async def create_ai_model(payload: CreateAIModelPayload) -> AIModel:
     """Register a new AI model in the catalogue."""
@@ -87,3 +102,28 @@ async def delete_ai_model(model_id: str) -> AIModel:
         return unregister_model(model_id)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="Model not found") from exc
+
+
+@app.post(
+    "/api/models/{model_id}/phenotype_prediction",
+    response_model=PhenotypePredictionResponse,
+)
+async def request_phenotype_prediction(
+    model_id: str, payload: PhenotypePredictionPayload
+) -> PhenotypePredictionResponse:
+    """Request a mocked phenotype prediction for the provided genotype data."""
+
+    try:
+        prediction_score = phenotype_prediction(
+            model_id, genotype_data=payload.genotype_data
+        )
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Model not found") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return PhenotypePredictionResponse(
+        model_id=model_id,
+        genotype_count=len(payload.genotype_data),
+        prediction_score=prediction_score,
+    )

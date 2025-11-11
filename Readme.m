@@ -28,6 +28,17 @@ model, pass its identifier via the `--model-id` option:
 python client/models_client.py --model-id phenotype_classifier_v1
 ```
 
+To exercise the mocked phenotype prediction flow you can reuse the genotype
+data stored in `csv/genotype_tomato.csv`. The client loads the `BP1150`
+column, sends it to the server, and prints the returned prediction score:
+
+```bash
+python client/models_client.py --predict-model-id phenotype_classifier_v1
+```
+
+You can override the CSV location and column name via `--csv-path` and
+`--csv-column` if you need to test alternative datasets.
+
 ## API Overview
 
 - `GET /api/models` — returns the list of available phenotype prediction models.
@@ -37,6 +48,8 @@ python client/models_client.py --model-id phenotype_classifier_v1
   payload schema shown below.
 - `DELETE /api/models/{model_id}` — removes a model from the catalogue and
   returns the deleted entry.
+- `POST /api/models/{model_id}/phenotype_prediction` — accepts genotype data
+  and returns a mocked prediction score between 0 and 1.
 
 Example payload for registering a model:
 
@@ -52,7 +65,8 @@ Example payload for registering a model:
 ```
 
 The catalogue is currently populated with mock data until the model registry
-service is connected.
+service is connected. Prediction responses are also mocked and return a random
+floating-point score in the `[0, 1]` range to emulate an inference call.
 
 ### Managing mock AI models in code
 
