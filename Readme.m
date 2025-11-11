@@ -33,6 +33,23 @@ python client/models_client.py --model-id phenotype_classifier_v1
 - `GET /api/models` — returns the list of available phenotype prediction models.
 - `GET /api/models/{model_id}/phenotypes` — returns the phenotypes the selected
   model can predict.
+- `POST /api/models` — registers a new model in the mock catalogue using the
+  payload schema shown below.
+- `DELETE /api/models/{model_id}` — removes a model from the catalogue and
+  returns the deleted entry.
+
+Example payload for registering a model:
+
+```json
+{
+  "id": "custom_model",
+  "display_name": "Custom Model",
+  "version": "0.1.0",
+  "supported_inputs": ["example_input"],
+  "predictable_phenotypes": ["example_phenotype"],
+  "description": "Optional human readable summary"
+}
+```
 
 The catalogue is currently populated with mock data until the model registry
 service is connected.

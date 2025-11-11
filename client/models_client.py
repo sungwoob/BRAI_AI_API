@@ -31,6 +31,20 @@ class PhenotypeApiClient(AbstractContextManager["PhenotypeApiClient"]):
         data: Sequence[str] = response.json()
         return list(data)
 
+    def register_model(self, model_payload: dict) -> dict:
+        """Register a model in the catalogue via the API."""
+
+        response = self._client.post("/api/models", json=model_payload)
+        response.raise_for_status()
+        return response.json()
+
+    def delete_model(self, model_id: str) -> dict:
+        """Remove a model from the catalogue via the API."""
+
+        response = self._client.delete(f"/api/models/{model_id}")
+        response.raise_for_status()
+        return response.json()
+
     def close(self) -> None:
         """Close the underlying HTTP client."""
 
